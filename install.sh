@@ -53,6 +53,12 @@ ssl_update_file="/usr/bin/ssl_update.sh"
 nginx_version="1.21.0"
 openssl_version="1.1.1g"
 jemalloc_version="5.2.1"
+nginx_rtmp_version="1.2.2"
+nginx_fancyindex_version="0.5.1"
+nginx_theme_version="1.1"
+nginx_accept_language_version="1.0"
+nginx_audio_hls_version="0.2"
+nginx_lua_version="0.10.20rc1"
 old_config_status="off"
 v2ray_version="4.23.1"
 # v2ray_plugin_version="$(wget -qO- "https://github.com/shadowsocks/v2ray-plugin/tags" | grep -E "/shadowsocks/v2ray-plugin/releases/tag/" | head -1 | sed -r 's/.*tag\/v(.+)\">.*/\1/')"
@@ -199,9 +205,9 @@ dependency_install() {
     judge "编译工具包 安装"
 
     if [[ "${ID}" == "centos" ]]; then
-        ${INS} -y install pcre pcre-devel zlib-devel epel-release ffmpeg-4.2.4-1.el8.x86_64 avformat avcodec avutil 
+        ${INS} -y install pcre pcre-devel zlib-devel epel-release autoconf automake bzip2 bzip2-devel cmake freetype-devel gcc gcc-c++ git libtool make mercurial pkgconfig zlib-devel 
     else
-        ${INS} -y install libpcre3 libpcre3-dev zlib1g-dev dbus
+        ${INS} -y install libpcre3 libpcre3-dev zlib1g-dev dbus autoconf automake bzip2 bzip2-devel cmake freetype-devel gcc gcc-c++ git libtool make mercurial pkgconfig zlib-devel
     fi
 
     #    ${INS} -y install rng-tools
@@ -347,25 +353,23 @@ nginx_install() {
     #    if [[ -d "/etc/nginx" ]];then
     #        rm -rf /etc/nginx
     #    fi
-
     wget -nc --no-check-certificate http://nginx.org/download/nginx-${nginx_version}.tar.gz -P ${nginx_openssl_src}
     judge "Nginx 下载"
     wget -nc --no-check-certificate https://www.openssl.org/source/openssl-${openssl_version}.tar.gz -P ${nginx_openssl_src}
     judge "openssl 下载"
     wget -nc --no-check-certificate https://github.com/jemalloc/jemalloc/releases/download/${jemalloc_version}/jemalloc-${jemalloc_version}.tar.bz2 -P ${nginx_openssl_src}
     judge "jemalloc 下载"
-    git clone https://github.com/arut/nginx-rtmp-module ${nginx_openssl_src}/nginx-rtmp-module
+    wget -nc --no-check-certificate https://github.com/arut/nginx-rtmp-module/releases/download/${nginx_rtmp_version}/nginx-rtmp-module-${nginx_rtmp_version}.tar.gz -P ${nginx_openssl_src}
     judge "nginx-rtmp-module 下载"
-    git clone https://github.com/aperezdc/ngx-fancyindex.git ${nginx_openssl_src}/ngx-fancyindex
+    wget -nc --no-check-certificate  https://github.com/aperezdc/ngx-fancyindex/releases/download/${nginx_fancyindex_version}/nginx-fancyindex-${nginx_fancyindex_version}.tar.gz -P ${nginx_openssl_src}
     judge "ngx-fancyindex 下载"
-    git clone https://github.com/Naereen/Nginx-Fancyindex-Theme.git ${nginx_openssl_src}/Nginx-Fancyindex-Theme
+    wget -nc --no-check-certificate  https://github.com/Naereen/Nginx-Fancyindex-Theme/releases/download/${nginx_theme_version}/Nginx-Fancyindex-Theme-${nginx_theme_version}.tar.gz -P ${nginx_openssl_src}
     judge "Nginx-Fancyindex-Theme 下载"
-    git clone https://github.com/giom/nginx_accept_language_module ${nginx_openssl_src}/nginx_accept_language_module
+    wget -nc --no-check-certificate  https://github.com/guyezi/nginx_accept_language_module/releases/download/${nginx_accept_language_version}/nginx_accept_language_module-${nginx_accept_language_version}.tar.gz -P ${nginx_openssl_src}
     judge "nginx_accept_language_module 下载"
-    git clone git://github.com/flavioribeiro/nginx-audio-track-for-hls-module.git ${nginx_openssl_src}/nginx-audio-track-for-hls-module
+    wget -nc --no-check-certificate  https://github.com/flavioribeiro/nginx-audio-track-for-hls-module/releases/download/${nginx_audio_hls_version}/nginx-audio-track-for-hls-module-${nginx_audio_hls_version}.tar.gz -P ${nginx_openssl_src}
     judge "nginx-audio-track-for-hls-module 下载"
-    git clone git://github.com/chaoslawful/lua-nginx-module.git ${nginx_openssl_src}/lua-nginx-module
-    judge "lua-nginx-module 下载"
+    wget -nc --no-check-certificate  git://github.com/chaoslawful/lua-nginx-module/releases/download/${nginx_lua_version}/lua-nginx-module-${nginx_lua_version}.tar.gz -P ${nginx_openssl_src}
 
     cd ${nginx_openssl_src} || exit
 
