@@ -24,8 +24,8 @@
       "tlsSettings": {
         "certificates": [
           {
-            "certificateFile": "/data/v2ray.crt",
-            "keyFile": "/data/v2ray.key"
+            "certificateFile": "/cert/"${domain}".crt",
+            "keyFile": "/cert/"${domain}".key"
           }
         ]
       }
