@@ -29,7 +29,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 
 # 版本
-shell_version="1.1.6.3"
+shell_version="1.1.6.2"
 shell_mode="None"
 github_branch="web"
 version_cmp="/tmp/version_cmp.tmp"
@@ -359,23 +359,32 @@ nginx_install() {
     judge "openssl 下载"
     wget -nc --no-check-certificate https://github.com/jemalloc/jemalloc/releases/download/${jemalloc_version}/jemalloc-${jemalloc_version}.tar.bz2 -P ${nginx_openssl_src}
     judge "jemalloc 下载"
-    wget -nc -O ${nginx_openssl_src}/nginx-rtmp-module-"${nginx_rtmp_version}".tar.gz --no-check-certificate https://github.com/arut/nginx-rtmp-module/archive/refs/tags/v"${nginx_rtmp_version}".tar.gz 
-    #https://github.com/arut/nginx-rtmp-module/archive/refs/tags/v1.2.2.tar.gz
+    #wget -nc -O "${nginx_openssl_src}"/nginx-rtmp-module-"${nginx_rtmp_version}".tar.gz --no-check-certificate https://github.com/arut/nginx-rtmp-module/archive/refs/tags/v"${nginx_rtmp_version}".tar.gz 
+    git clone https://github.com/arut/nginx-rtmp-module "${nginx_openssl_src}"/nginx-rtmp-module
     judge "nginx-rtmp-module 下载"
-    wget -nc -O ${nginx_openssl_src}/ngx-fancyindex-"${nginx_fancyindex_version}".tar.xz --no-check-certificate https://github.com/aperezdc/ngx-fancyindex/archive/refs/tags/v"${nginx_fancyindex_version}".tar.gz
+    #wget -nc -O "${nginx_openssl_src}"/ngx-fancyindex-"${nginx_fancyindex_version}".tar.xz --no-check-certificate https://github.com/aperezdc/ngx-fancyindex/archive/refs/tags/v"${nginx_fancyindex_version}".tar.gz
     #https://github.com/aperezdc/ngx-fancyindex/archive/refs/tags/v0.5.1.tar.gz
+    git clone https://github.com/aperezdc/ngx-fancyindex "${nginx_openssl_src}"/ngx-fancyindex
     judge "ngx-fancyindex 下载"
-    wget -nc -O "${nginx_openssl_src}"/Nginx-Fancyindex-Theme-"${nginx_theme_version}".tar.gz --no-check-certificate https://github.com/Naereen/Nginx-Fancyindex-Theme/archive/refs/tags/v"${nginx_theme_version}".tar.gz
+    #wget -nc -O "${nginx_openssl_src}"/Nginx-Fancyindex-Theme-"${nginx_theme_version}".tar.gz --no-check-certificate https://github.com/Naereen/Nginx-Fancyindex-Theme/archive/refs/tags/v"${nginx_theme_version}".tar.gz
     #https://github.com/Naereen/Nginx-Fancyindex-Theme/archive/refs/tags/v"${nginx_theme_version}".tar.gz
+    git clone https://github.com/Naereen/Nginx-Fancyindex-Theme "${nginx_openssl_src}"/Nginx-Fancyindex-Theme
+
     judge "Nginx-Fancyindex-Theme 下载"
-    wget -nc -O "${nginx_openssl_src}"/nginx_accept_language_module-"${nginx_accept_language_version}".tar.gz --no-check-certificate https://github.com/guyezi/nginx_accept_language_module/archive/refs/tags/"${nginx_accept_language_version}".tar.gz
+    #wget -nc -O "${nginx_openssl_src}"/nginx_accept_language_module-"${nginx_accept_language_version}".tar.gz --no-check-certificate https://github.com/guyezi/nginx_accept_language_module/archive/refs/tags/"${nginx_accept_language_version}".tar.gz
     #https://github.com/guyezi/nginx_accept_language_module/archive/refs/tags/1.0.tar.gz
+    git clone https://github.com/guyezi/nginx_accept_language_module "${nginx_openssl_src}"/nginx_accept_language_module
+
     judge "nginx_accept_language_module 下载"
-    wget -nc -O  "${nginx_openssl_src}"/nginx-audio-track-for-hls-module-"${nginx_audio_hls_version}".tar.gz --no-check-certificate https://github.com/flavioribeiro/nginx-audio-track-for-hls-module/archive/refs/tags/${nginx_audio_hls_version}.tar.gz
+    #wget -nc -O  "${nginx_openssl_src}"/nginx-audio-track-for-hls-module-"${nginx_audio_hls_version}".tar.gz --no-check-certificate https://github.com/flavioribeiro/nginx-audio-track-for-hls-module/archive/refs/tags/"${nginx_audio_hls_version}".tar.gz
     #https://github.com/flavioribeiro/nginx-audio-track-for-hls-module/archive/refs/tags/0.2.tar.gz
+    git clone https://github.com/flavioribeiro/nginx-audio-track-for-hls-module "${nginx_openssl_src}"/nginx-audio-track-for-hls-module
+
     judge "nginx-audio-track-for-hls-module 下载"
-    wget -nc -O  "${nginx_openssl_src}"/lua-nginx-module-"${nginx_lua_version}".tar.gz --no-check-certificate https://github.com/openresty/lua-nginx-module/archive/refs/tags/v"${nginx_lua_version}".tar.gz
+    #wget -nc -O  "${nginx_openssl_src}"/lua-nginx-module-"${nginx_lua_version}".tar.gz --no-check-certificate https://github.com/openresty/lua-nginx-module/archive/refs/tags/v"${nginx_lua_version}".tar.gz
     #https://github.com/openresty/lua-nginx-module/archive/refs/tags/v0.10.20rc1.tar.gz
+    git clone https://github.com/openresty/lua-nginx-module  "${nginx_openssl_src}"/lua-nginx-module
+
     judge "lua-nginx-module 下载"
 
     cd ${nginx_openssl_src} || exit
