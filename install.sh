@@ -434,10 +434,7 @@ nginx_install() {
         --with-openssl=../openssl-"$openssl_version" \
         --add-module=../ngx-fancyindex \
         --add-module=../nginx-rtmp-module \
-        --add-module=../nginx_accept_language_module \
-        --add-module=../nginx-audio-track-for-hls-module 
-        #--add-module=../lua-nginx-module
-
+        --add-module=../nginx_accept_language_module 
 
     judge "编译检查"
     make -j "${THREAD}" && make install
