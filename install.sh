@@ -36,7 +36,7 @@ version_cmp="/tmp/version_cmp.tmp"
 v2ray_conf_dir="/usr/local/etc/v2ray"
 nginx_conf_dir="/etc/nginx"
 v2ray_conf="${v2ray_conf_dir}/config.json"
-nginx_conf="${nginx_conf_dir}/conf.d/v2yun.conf"
+nginx_conf="${nginx_conf_dir}/conf.d"
 nginx_dir="/usr/nginx"
 web_dir="/usr/nginx/html"
 nginx_openssl_src="/usr/local/src"
@@ -572,8 +572,8 @@ old_config_exist_check() {
     fi
 }
 nginx_conf_add() {
-    touch ${nginx_conf_dir}/v2yun.conf
-    cat >${nginx_conf_dir}/v2yun.conf <<EOF
+    touch ${nginx_conf_dir}/conf.d/v2yun.conf
+    cat >${nginx_conf_dir}/conf.d/v2yun.conf <<EOF
     server {
         listen 443 ssl http2;
         listen [::]:443 http2;
