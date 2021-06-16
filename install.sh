@@ -34,7 +34,7 @@ shell_mode="None"
 github_branch="master"
 version_cmp="/tmp/version_cmp.tmp"
 v2ray_conf_dir="/usr/local/etc/v2ray"
-nginx_conf_dir="/etc/nginx/conf.d"
+nginx_conf_dir="/etc/nginx"
 v2ray_conf="${v2ray_conf_dir}/config.json"
 nginx_conf="${nginx_conf_dir}/v2yun.conf"
 nginx_dir="/usr/nginx"
@@ -390,6 +390,7 @@ nginx_install() {
     cd ../nginx-${nginx_version} || exit
 
     ./configure --prefix="${nginx_dir}" \
+        --conf-path="${nginx_conf_dir}"/nginx.conf \
         --with-http_ssl_module \
         --with-http_sub_module \
         --with-http_gzip_static_module \
@@ -411,11 +412,11 @@ nginx_install() {
     judge "Nginx 编译安装"
 
     # 修改基本配置
-    sed -i 's/#user  nobody;/user  root;/' ${nginx_dir}/nginx.conf
-    sed -i 's/worker_processes  1;/worker_processes  3;/' ${nginx_dir}/nginx.conf
-    sed -i 's/    worker_connections  1024;/    worker_connections  4096;/' ${nginx_dir}/nginx.conf
-    sed -i '$i include conf.d/*.conf;' ${nginx_dir}/nginx.conf
-    cp -r ${nginx_openssl_src}/Nginx-Fancyindex-Theme/fancyindex.conf ${nginx_dir}/conf.d/
+    sed -i 's/#user  nobody;/user  root;/' ${nginx_conf_dir}/nginx.conf
+    sed -i 's/worker_processes  1;/worker_processes  3;/' ${nginx_conf_dir}/nginx.conf
+    sed -i 's/    worker_connections  1024;/    worker_connections  4096;/' ${nginx_conf_dir}/nginx.conf
+    sed -i '$i include conf.d/*.conf;' ${nginx_conf_dir}/nginx.conf
+    cp -r ${nginx_openssl_src}/Nginx-Fancyindex-Theme/fancyindex.conf ${nginx_conf_dir}/conf.d/
     cp -r ${nginx_openssl_src}/Nginx-Fancyindex-Theme/Nginx-Fancyindex-Theme-dark /usr/nginx/html/
     cp -r ${nginx_openssl_src}/Nginx-Fancyindex-Theme/Nginx-Fancyindex-Theme-light /usr/nginx/html/
 
@@ -426,7 +427,7 @@ nginx_install() {
     rm -rf ../openssl-"${openssl_version}".tar.gz
 
     # 添加配置文件夹，适配旧版脚本
-    mkdir ${nginx_dir}/conf.d
+    mkdir ${nginx_conf_dir}/conf.d
 }
 ssl_install() {
     if [[ "${ID}" == "centos" ]]; then
