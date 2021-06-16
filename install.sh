@@ -359,17 +359,23 @@ nginx_install() {
     judge "openssl 下载"
     wget -nc --no-check-certificate https://github.com/jemalloc/jemalloc/releases/download/${jemalloc_version}/jemalloc-${jemalloc_version}.tar.bz2 -P ${nginx_openssl_src}
     judge "jemalloc 下载"
-    wget -nc --no-check-certificate https://github.com/arut/nginx-rtmp-module/releases/download/${nginx_rtmp_version}/nginx-rtmp-module-${nginx_rtmp_version}.tar.gz -P ${nginx_openssl_src}
+    wget -nc -O ${nginx_openssl_src}/nginx-rtmp-module-"${nginx_rtmp_version}".tar.gz --no-check-certificate https://github.com/arut/nginx-rtmp-module/archive/refs/tags/v"${nginx_rtmp_version}".tar.gz 
+    #https://github.com/arut/nginx-rtmp-module/archive/refs/tags/v1.2.2.tar.gz
     judge "nginx-rtmp-module 下载"
-    wget -nc --no-check-certificate  https://github.com/aperezdc/ngx-fancyindex/releases/download/${nginx_fancyindex_version}/nginx-fancyindex-${nginx_fancyindex_version}.tar.gz -P ${nginx_openssl_src}
+    wget -nc --no-check-certificate https://github.com/aperezdc/ngx-fancyindex/releases/download/${nginx_fancyindex_version}/ngx-fancyindex-"${nginx_fancyindex_version}".tar.xz -P ${nginx_openssl_src}
     judge "ngx-fancyindex 下载"
-    wget -nc --no-check-certificate  https://github.com/Naereen/Nginx-Fancyindex-Theme/releases/download/${nginx_theme_version}/Nginx-Fancyindex-Theme-${nginx_theme_version}.tar.gz -P ${nginx_openssl_src}
+    wget -nc -O "${nginx_openssl_src}"/Nginx-Fancyindex-Theme-"${nginx_theme_version}".tar.gz --no-check-certificate https://github.com/Naereen/Nginx-Fancyindex-Theme/archive/refs/tags/v"${nginx_theme_version}".tar.gz
+    #https://github.com/Naereen/Nginx-Fancyindex-Theme/archive/refs/tags/v"${nginx_theme_version}".tar.gz
     judge "Nginx-Fancyindex-Theme 下载"
-    wget -nc --no-check-certificate  https://github.com/guyezi/nginx_accept_language_module/releases/download/${nginx_accept_language_version}/nginx_accept_language_module-${nginx_accept_language_version}.tar.gz -P ${nginx_openssl_src}
+    wget -nc -O "${nginx_openssl_src}"/nginx_accept_language_module-"${nginx_accept_language_version}".tar.gz --no-check-certificate https://github.com/guyezi/nginx_accept_language_module/archive/refs/tags/"${nginx_accept_language_version}".tar.gz
+    #https://github.com/guyezi/nginx_accept_language_module/archive/refs/tags/1.0.tar.gz
     judge "nginx_accept_language_module 下载"
-    wget -nc --no-check-certificate  https://github.com/flavioribeiro/nginx-audio-track-for-hls-module/releases/download/${nginx_audio_hls_version}/nginx-audio-track-for-hls-module-${nginx_audio_hls_version}.tar.gz -P ${nginx_openssl_src}
+    wget -nc -O  "${nginx_openssl_src}"/nginx-audio-track-for-hls-module-"${nginx_audio_hls_version}".tar.gz --no-check-certificate https://github.com/flavioribeiro/nginx-audio-track-for-hls-module/archive/refs/tags/${nginx_audio_hls_version}.tar.gz
+    #https://github.com/flavioribeiro/nginx-audio-track-for-hls-module/archive/refs/tags/0.2.tar.gz
     judge "nginx-audio-track-for-hls-module 下载"
-    wget -nc --no-check-certificate  git://github.com/chaoslawful/lua-nginx-module/releases/download/${nginx_lua_version}/lua-nginx-module-${nginx_lua_version}.tar.gz -P ${nginx_openssl_src}
+    wget -nc -O  "${nginx_openssl_src}"/lua-nginx-module-"${nginx_lua_version}".tar.gz --no-check-certificate https://github.com/openresty/lua-nginx-module/archive/refs/tags/v"${nginx_lua_version}".tar.gz
+    #https://github.com/openresty/lua-nginx-module/archive/refs/tags/v0.10.20rc1.tar.gz
+    judge "lua-nginx-module 下载"
 
     cd ${nginx_openssl_src} || exit
 
@@ -381,6 +387,24 @@ nginx_install() {
 
     [[ -d jemalloc-"${jemalloc_version}" ]] && rm -rf jemalloc-"${jemalloc_version}"
     tar -xvf jemalloc-"${jemalloc_version}".tar.bz2
+
+    [[ -d nginx-rtmp-module-"${nginx_rtmp_version}" ]] && rm -rf nginx-rtmp-module-"${nginx_rtmp_version}"
+    tar -zxvf nginx-rtmp-module-"${nginx_rtmp_version}".tar.gz
+
+    [[ -d ngx-fancyindex-"${nginx_fancyindex_version}" ]] && rm -rf ngx-fancyindex-"${nginx_fancyindex_version}"
+    tar -zxvf ngx-fancyindex-"${nginx_fancyindex_version}".tar.gz
+
+    [[ -d Nginx-Fancyindex-Theme-"${nginx_theme_version}" ]] && rm -rf Nginx-Fancyindex-Theme-"${nginx_theme_version}"
+    tar -xvJf Nginx-Fancyindex-Theme-"${nginx_theme_version}".tar.xz
+
+    [[ -d lua-nginx-module-"${nginx_lua_version}" ]] && rm -rf lua-nginx-module-"${nginx_lua_version}"
+    tar -zxvf lua-nginx-module-"${nginx_lua_version}".tar.gz
+
+    [[ -d nginx_accept_language_module-"${nginx_accept_language_version}" ]] && rm -rf nginx_accept_language_module-"${nginx_accept_language_version}"
+    tar -zxvf nginx_accept_language_module-"${nginx_accept_language_version}".tar.gz
+
+    [[ -d nginx-audio-track-for-hls-module-"${nginx_audio_hls_version}" ]] && rm -rf nginx-audio-track-for-hls-module-"${nginx_audio_hls_version}"
+    tar -zxvf nginx-audio-track-for-hls-module-"${nginx_audio_hls_version}".tar.gz
 
     [[ -d "$nginx_dir" ]] && rm -rf ${nginx_dir}
 
