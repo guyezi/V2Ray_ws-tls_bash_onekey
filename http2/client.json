@@ -31,7 +31,7 @@
     "streamSettings": {
       "network": "h2",
       "httpSettings": {
-        "path": "/ray/"
+        "path": "/yun"
       },
       "security": "tls"
     },
