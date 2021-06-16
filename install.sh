@@ -33,12 +33,12 @@ shell_version="1.1.6.2"
 shell_mode="None"
 github_branch="master"
 version_cmp="/tmp/version_cmp.tmp"
-v2ray_conf_dir="/etc/v2ray"
-nginx_conf_dir="/etc/nginx/conf/conf.d"
+v2ray_conf_dir="/usr/local/etc/v2ray"
+nginx_conf_dir="/etc/nginx/conf.d"
 v2ray_conf="${v2ray_conf_dir}/config.json"
-nginx_conf="${nginx_conf_dir}/v2ray.conf"
-nginx_dir="/etc/nginx"
-web_dir="/home/wwwroot"
+nginx_conf="${nginx_conf_dir}/v2yun.conf"
+nginx_dir="/usr/nginx"
+web_dir="/usr/nginx/html"
 nginx_openssl_src="/usr/local/src"
 v2ray_bin_dir_old="/usr/bin/v2ray"
 v2ray_bin_dir="/usr/local/bin"
@@ -50,7 +50,7 @@ v2ray_access_log="/var/log/v2ray/access.log"
 v2ray_error_log="/var/log/v2ray/error.log"
 amce_sh_file="/root/.acme.sh/acme.sh"
 ssl_update_file="/usr/bin/ssl_update.sh"
-nginx_version="1.18.0"
+nginx_version="1.21.0"
 openssl_version="1.1.1g"
 jemalloc_version="5.2.1"
 old_config_status="off"
@@ -302,9 +302,9 @@ modify_nginx_other() {
 }
 web_camouflage() {
     ##请注意 这里和LNMP脚本的默认路径冲突，千万不要在安装了LNMP的环境下使用本脚本，否则后果自负
-    rm -rf /home/wwwroot
-    mkdir -p /home/wwwroot
-    cd /home/wwwroot || exit
+    rm -rf /usr/nginx/html
+    mkdir -p /usr/nginx/html
+    cd /usr/nginx/html || exit
     git clone https://github.com/wulabing/3DCEList.git
     judge "web 站点伪装"
 }
@@ -317,7 +317,7 @@ v2ray_install() {
     fi
     mkdir -p /root/v2ray
     cd /root/v2ray || exit
-    wget -N --no-check-certificate https://raw.githubusercontent.com/wulabing/V2Ray_ws-tls_bash_onekey/${github_branch}/v2ray.sh
+    wget -N --no-check-certificate https://raw.githubusercontent.com/guyezi/V2Ray_ws-tls_bash_onekey/${github_branch}/v2ray.sh
 
     if [[ -f v2ray.sh ]]; then
         rm -rf $v2ray_systemd_file
@@ -332,7 +332,7 @@ v2ray_install() {
     rm -rf /root/v2ray
 }
 nginx_exist_check() {
-    if [[ -f "/etc/nginx/sbin/nginx" ]]; then
+    if [[ -f "/usr/nginx/sbin/nginx" ]]; then
         echo -e "${OK} ${GreenBG} Nginx已存在，跳过编译安装过程 ${Font}"
         sleep 2
     elif [[ -d "/usr/local/nginx/" ]]; then
@@ -353,6 +353,12 @@ nginx_install() {
     judge "openssl 下载"
     wget -nc --no-check-certificate https://github.com/jemalloc/jemalloc/releases/download/${jemalloc_version}/jemalloc-${jemalloc_version}.tar.bz2 -P ${nginx_openssl_src}
     judge "jemalloc 下载"
+    git clone https://github.com/arut/nginx-rtmp-module ${nginx_openssl_src}/nginx-rtmp-module
+    judge "nginx-rtmp-module 下载"
+    git clone https://github.com/aperezdc/ngx-fancyindex.git ${nginx_openssl_src}/ngx-fancyindex
+    judge "ngx-fancyindex 下载"
+    git clone https://github.com/Naereen/Nginx-Fancyindex-Theme.git ${nginx_openssl_src}/Nginx-Fancyindex-Theme
+    judge "Nginx-Fancyindex-Theme 下载"
 
     cd ${nginx_openssl_src} || exit
 
@@ -396,16 +402,22 @@ nginx_install() {
         --with-http_v2_module \
         --with-cc-opt='-O3' \
         --with-ld-opt="-ljemalloc" \
-        --with-openssl=../openssl-"$openssl_version"
+        --with-openssl=../openssl-"$openssl_version" \
+        --add-module=../ngx-fancyindex \
+        --add-module=../nginx-rtmp-module
+
     judge "编译检查"
     make -j "${THREAD}" && make install
     judge "Nginx 编译安装"
 
     # 修改基本配置
-    sed -i 's/#user  nobody;/user  root;/' ${nginx_dir}/conf/nginx.conf
-    sed -i 's/worker_processes  1;/worker_processes  3;/' ${nginx_dir}/conf/nginx.conf
-    sed -i 's/    worker_connections  1024;/    worker_connections  4096;/' ${nginx_dir}/conf/nginx.conf
-    sed -i '$i include conf.d/*.conf;' ${nginx_dir}/conf/nginx.conf
+    sed -i 's/#user  nobody;/user  root;/' ${nginx_dir}/nginx.conf
+    sed -i 's/worker_processes  1;/worker_processes  3;/' ${nginx_dir}/nginx.conf
+    sed -i 's/    worker_connections  1024;/    worker_connections  4096;/' ${nginx_dir}/nginx.conf
+    sed -i '$i include conf.d/*.conf;' ${nginx_dir}/nginx.conf
+    cp -r ${nginx_openssl_src}/Nginx-Fancyindex-Theme/fancyindex.conf ${nginx_dir}/conf.d/
+    cp -r ${nginx_openssl_src}/Nginx-Fancyindex-Theme/Nginx-Fancyindex-Theme-dark /usr/nginx/html/
+    cp -r ${nginx_openssl_src}/Nginx-Fancyindex-Theme/Nginx-Fancyindex-Theme-light /usr/nginx/html/
 
     # 删除临时文件
     rm -rf ../nginx-"${nginx_version}"
@@ -414,7 +426,7 @@ nginx_install() {
     rm -rf ../openssl-"${openssl_version}".tar.gz
 
     # 添加配置文件夹，适配旧版脚本
-    mkdir ${nginx_dir}/conf/conf.d
+    mkdir ${nginx_dir}/conf.d
 }
 ssl_install() {
     if [[ "${ID}" == "centos" ]]; then
@@ -430,7 +442,7 @@ ssl_install() {
     judge "安装 SSL 证书生成脚本"
 }
 domain_check() {
-    read -rp "请输入你的域名信息(eg:www.wulabing.com):" domain
+    read -rp "请输入你的域名信息(eg:www.guyezi.com):" domain
     domain_ip=$(ping "${domain}" -c 1 | sed '1{s/[^(]*(//;s/).*//;q}')
     echo -e "${OK} ${GreenBG} 正在获取 公网ip 信息，请耐心等待 ${Font}"
     local_ip=$(curl https://api-ipv4.ip.sb/ip)
@@ -485,8 +497,8 @@ acme() {
     if "$HOME"/.acme.sh/acme.sh --issue -d "${domain}" --standalone -k ec-256 --force; then
         echo -e "${OK} ${GreenBG} SSL 证书生成成功 ${Font}"
         sleep 2
-        mkdir /data
-        if "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath /data/v2ray.crt --keypath /data/v2ray.key --ecc --force; then
+        mkdir /cert
+        if "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath /cert/${domain}.crt --keypath /cert/${domain}.key --ecc --force; then
             echo -e "${OK} ${GreenBG} 证书配置成功 ${Font}"
             sleep 2
         fi
@@ -498,7 +510,7 @@ acme() {
 }
 v2ray_conf_add_tls() {
     cd /etc/v2ray || exit
-    wget --no-check-certificate https://raw.githubusercontent.com/wulabing/V2Ray_ws-tls_bash_onekey/${github_branch}/tls/config.json -O config.json
+    wget --no-check-certificate https://raw.githubusercontent.com/guyezi/V2Ray_ws-tls_bash_onekey/${github_branch}/tls/config.json -O config.json
     modify_path
     modify_alterid
     modify_inbound_port
@@ -506,7 +518,7 @@ v2ray_conf_add_tls() {
 }
 v2ray_conf_add_h2() {
     cd /etc/v2ray || exit
-    wget --no-check-certificate https://raw.githubusercontent.com/wulabing/V2Ray_ws-tls_bash_onekey/${github_branch}/http2/config.json -O config.json
+    wget --no-check-certificate https://raw.githubusercontent.com/guyezi/V2Ray_ws-tls_bash_onekey/${github_branch}/http2/config.json -O config.json
     modify_path
     modify_alterid
     modify_inbound_port
@@ -530,18 +542,18 @@ old_config_exist_check() {
     fi
 }
 nginx_conf_add() {
-    touch ${nginx_conf_dir}/v2ray.conf
-    cat >${nginx_conf_dir}/v2ray.conf <<EOF
+    touch ${nginx_conf_dir}/v2yun.conf
+    cat >${nginx_conf_dir}/v2yun.conf <<EOF
     server {
         listen 443 ssl http2;
         listen [::]:443 http2;
-        ssl_certificate       /data/v2ray.crt;
-        ssl_certificate_key   /data/v2ray.key;
+        ssl_certificate       /cert/v2ray.crt;
+        ssl_certificate_key   /cert/v2ray.key;
         ssl_protocols         TLSv1.3;
         ssl_ciphers           TLS13-AES-256-GCM-SHA384:TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-GCM-SHA256:TLS13-AES-128-CCM-8-SHA256:TLS13-AES-128-CCM-SHA256:EECDH+CHACHA20:EECDH+CHACHA20-draft:EECDH+ECDSA+AES128:EECDH+aRSA+AES128:RSA+AES128:EECDH+ECDSA+AES256:EECDH+aRSA+AES256:RSA+AES256:EECDH+ECDSA+3DES:EECDH+aRSA+3DES:RSA+3DES:!MD5;
         server_name           serveraddr.com;
         index index.html index.htm;
-        root  /home/wwwroot/3DCEList;
+        root  /usr/nginx/html/3DCEList;
         error_page 400 = /400.html;
 
         # Config for 0-RTT in TLSv1.3
@@ -550,7 +562,7 @@ nginx_conf_add() {
         ssl_stapling_verify on;
         add_header Strict-Transport-Security "max-age=31536000";
 
-        location /ray/
+        location /yun/
         {
         proxy_redirect off;
         proxy_read_timeout 1200s;
@@ -624,7 +636,7 @@ nginx_process_disabled() {
 #    judge "rc.local 配置"
 #}
 acme_cron_update() {
-    wget -N -P /usr/bin --no-check-certificate "https://raw.githubusercontent.com/wulabing/V2Ray_ws-tls_bash_onekey/dev/ssl_update.sh"
+    wget -N -P /usr/bin --no-check-certificate "https://raw.githubusercontent.com/guyezi/V2Ray_ws-tls_bash_onekey/dev/ssl_update.sh"
     if [[ $(crontab -l | grep -c "ssl_update.sh") -lt 1 ]]; then
       if [[ "${ID}" == "centos" ]]; then
           #        sed -i "/acme.sh/c 0 3 * * 0 \"/root/.acme.sh\"/acme.sh --cron --home \"/root/.acme.sh\" \
@@ -731,8 +743,8 @@ show_information() {
     cat "${v2ray_info_file}"
 }
 ssl_judge_and_install() {
-    if [[ -f "/data/v2ray.key" || -f "/data/v2ray.crt" ]]; then
-        echo "/data 目录下证书文件已存在"
+    if [[ -f "/cert/${domain}.key" || -f "/cert/${domain}.crt" ]]; then
+        echo "/cert 目录下证书文件已存在"
         echo -e "${OK} ${GreenBG} 是否删除 [Y/N]? ${Font}"
         read -r ssl_delete
         case $ssl_delete in
@@ -745,11 +757,11 @@ ssl_judge_and_install() {
         esac
     fi
 
-    if [[ -f "/data/v2ray.key" || -f "/data/v2ray.crt" ]]; then
+    if [[ -f "/cert/${domain}.key" || -f "/cert/${domain}.crt" ]]; then
         echo "证书文件已存在"
     elif [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
         echo "证书文件已存在"
-        "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath /data/v2ray.crt --keypath /data/v2ray.key --ecc
+        "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath /cert/${domain}.crt --keypath /cert/${domain}.key --ecc
         judge "证书应用"
     else
         ssl_install
@@ -765,10 +777,10 @@ After=syslog.target network.target remote-fs.target nss-lookup.target
 
 [Service]
 Type=forking
-PIDFile=/etc/nginx/logs/nginx.pid
-ExecStartPre=/etc/nginx/sbin/nginx -t
-ExecStart=/etc/nginx/sbin/nginx -c ${nginx_dir}/conf/nginx.conf
-ExecReload=/etc/nginx/sbin/nginx -s reload
+PIDFile=/usr/nginx/logs/nginx.pid
+ExecStartPre=/usr/nginx/sbin/nginx -t
+ExecStart=/usr/nginx/sbin/nginx -c ${nginx_dir}/nginx.conf
+ExecReload=/usr/nginx/sbin/nginx -s reload
 ExecStop=/bin/kill -s QUIT \$MAINPID
 PrivateTmp=true
 
@@ -781,7 +793,7 @@ EOF
 }
 
 tls_type() {
-    if [[ -f "/etc/nginx/sbin/nginx" ]] && [[ -f "$nginx_conf" ]] && [[ "$shell_mode" == "ws" ]]; then
+    if [[ -f "/usr/nginx/sbin/nginx" ]] && [[ -f "$nginx_conf" ]] && [[ "$shell_mode" == "ws" ]]; then
         echo "请选择支持的 TLS 版本（default:3）:"
         echo "请注意,如果你使用 Quantaumlt X / 路由器 / 旧版 Shadowrocket / 低于 4.18.1 版本的 V2ray core 请选择 兼容模式"
         echo "1: TLS1.1 TLS1.2 and TLS1.3（兼容模式）"
@@ -814,7 +826,7 @@ show_error_log() {
 ssl_update_manuel() {
     [ -f ${amce_sh_file} ] && "/root/.acme.sh"/acme.sh --cron --home "/root/.acme.sh" || echo -e "${RedBG}证书签发工具不存在，请确认你是否使用了自己的证书${Font}"
     domain="$(info_extraction '\"add\"')"
-    "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath /data/v2ray.crt --keypath /data/v2ray.key --ecc
+    "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath /cert/${domain}.crt --keypath /cert/${domain}.key --ecc
 }
 bbr_boost_sh() {
     [ -f "tcp.sh" ] && rm -rf ./tcp.sh
@@ -911,7 +923,7 @@ install_v2_h2() {
 
 }
 update_sh() {
-    ol_version=$(curl -L -s https://raw.githubusercontent.com/wulabing/V2Ray_ws-tls_bash_onekey/${github_branch}/install.sh | grep "shell_version=" | head -1 | awk -F '=|"' '{print $3}')
+    ol_version=$(curl -L -s https://raw.githubusercontent.com/guyezi/V2Ray_ws-tls_bash_onekey/${github_branch}/install.sh | grep "shell_version=" | head -1 | awk -F '=|"' '{print $3}')
     echo "$ol_version" >$version_cmp
     echo "$shell_version" >>$version_cmp
     if [[ "$shell_version" < "$(sort -rV $version_cmp | head -1)" ]]; then
@@ -919,7 +931,7 @@ update_sh() {
         read -r update_confirm
         case $update_confirm in
         [yY][eE][sS] | [yY])
-            wget -N --no-check-certificate https://raw.githubusercontent.com/wulabing/V2Ray_ws-tls_bash_onekey/${github_branch}/install.sh
+            wget -N --no-check-certificate https://raw.githubusercontent.com/guyezi/V2Ray_ws-tls_bash_onekey/${github_branch}/install.sh
             echo -e "${OK} ${GreenBG} 更新完成 ${Font}"
             exit 0
             ;;
@@ -959,8 +971,8 @@ list() {
 menu() {
     update_sh
     echo -e "\t V2ray 安装管理脚本 ${Red}[${shell_version}]${Font}"
-    echo -e "\t---authored by wulabing---"
-    echo -e "\thttps://github.com/wulabing\n"
+    echo -e "\t---authored by guyezi---"
+    echo -e "\thttps://github.com/guyezi\n"
     echo -e "当前已安装版本:${shell_mode}\n"
 
     echo -e "—————————————— 安装向导 ——————————————"""
@@ -1000,7 +1012,7 @@ menu() {
         install_v2_h2
         ;;
     3)
-        bash <(curl -L -s https://raw.githubusercontent.com/wulabing/V2Ray_ws-tls_bash_onekey/${github_branch}/v2ray.sh)
+        bash <(curl -L -s https://raw.githubusercontent.com/guyezi/V2Ray_ws-tls_bash_onekey/${github_branch}/v2ray.sh)
         ;;
     4)
         read -rp "请输入UUID:" UUID
