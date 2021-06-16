@@ -360,7 +360,7 @@ nginx_install() {
     wget -nc --no-check-certificate https://github.com/jemalloc/jemalloc/releases/download/${jemalloc_version}/jemalloc-${jemalloc_version}.tar.bz2 -P ${nginx_openssl_src}
     judge "jemalloc 下载"
     #wget -nc -O "${nginx_openssl_src}"/nginx-rtmp-module-"${nginx_rtmp_version}".tar.gz --no-check-certificate https://github.com/arut/nginx-rtmp-module/archive/refs/tags/v"${nginx_rtmp_version}".tar.gz 
-    git clone git://github.com/arut/nginx-rtmp-module.git "${nginx_openssl_src}"/nginx-rtmp-module
+    git clone https://github.com/guyezi/nginx-rtmp-module.git "${nginx_openssl_src}"/nginx-rtmp-module
     judge "nginx-rtmp-module 下载"
     #wget -nc -O "${nginx_openssl_src}"/ngx-fancyindex-"${nginx_fancyindex_version}".tar.xz --no-check-certificate https://github.com/aperezdc/ngx-fancyindex/archive/refs/tags/v"${nginx_fancyindex_version}".tar.gz
     #https://github.com/aperezdc/ngx-fancyindex/archive/refs/tags/v0.5.1.tar.gz
