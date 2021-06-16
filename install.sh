@@ -16,12 +16,12 @@ cd "$(
 #====================================================
 
 #fonts color
-#Green="\033[32m"
-#Red="\033[31m"
+Green="\033[34m"
+Red="\033[31m"
 # Yellow="\033[33m"
 #GreenBG="\033[40;33m"
 #RedBG="\033[41;37m"
-#Font="\033[31m"
+Font="\033[0m"
 
 #notification information
 # Info="${Green}[信息]${Font}"
@@ -342,7 +342,7 @@ nginx_exist_check() {
     if [[ -f "/usr/nginx/sbin/nginx" ]]; then
         echo -e "${OK} ${GreenBG} Nginx已存在，跳过编译安装过程 ${Font}"
         sleep 2
-    elif [[ -d "/usr/local/nginx/" ]]; then
+    elif [[ -d "/usr/nginx/" ]]; then
         echo -e "${OK} ${GreenBG} 检测到其他套件安装的Nginx，继续安装会造成冲突，请处理后安装${Font}"
         exit 1
     else
@@ -592,7 +592,7 @@ nginx_conf_add() {
         ssl_stapling_verify on;
         add_header Strict-Transport-Security "max-age=31536000";
 
-        location /yun/
+        location /yun
         {
         proxy_redirect off;
         proxy_read_timeout 1200s;
@@ -779,7 +779,7 @@ ssl_judge_and_install() {
         read -r ssl_delete
         case $ssl_delete in
         [yY][eE][sS] | [yY])
-            rm -rf /data/*
+            rm -rf /cert/*
             echo -e "${OK} ${GreenBG} 已删除 ${Font}"
             ;;
         *) ;;
