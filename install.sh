@@ -362,7 +362,8 @@ nginx_install() {
     wget -nc -O ${nginx_openssl_src}/nginx-rtmp-module-"${nginx_rtmp_version}".tar.gz --no-check-certificate https://github.com/arut/nginx-rtmp-module/archive/refs/tags/v"${nginx_rtmp_version}".tar.gz 
     #https://github.com/arut/nginx-rtmp-module/archive/refs/tags/v1.2.2.tar.gz
     judge "nginx-rtmp-module 下载"
-    wget -nc --no-check-certificate https://github.com/aperezdc/ngx-fancyindex/releases/download/${nginx_fancyindex_version}/ngx-fancyindex-"${nginx_fancyindex_version}".tar.xz -P ${nginx_openssl_src}
+    wget -nc -O ${nginx_openssl_src}/ngx-fancyindex-"${nginx_fancyindex_version}".tar.xz --no-check-certificate https://github.com/aperezdc/ngx-fancyindex/archive/refs/tags/v"${nginx_fancyindex_version}".tar.gz
+    #https://github.com/aperezdc/ngx-fancyindex/archive/refs/tags/v0.5.1.tar.gz
     judge "ngx-fancyindex 下载"
     wget -nc -O "${nginx_openssl_src}"/Nginx-Fancyindex-Theme-"${nginx_theme_version}".tar.gz --no-check-certificate https://github.com/Naereen/Nginx-Fancyindex-Theme/archive/refs/tags/v"${nginx_theme_version}".tar.gz
     #https://github.com/Naereen/Nginx-Fancyindex-Theme/archive/refs/tags/v"${nginx_theme_version}".tar.gz
@@ -395,7 +396,7 @@ nginx_install() {
     tar -zxvf ngx-fancyindex-"${nginx_fancyindex_version}".tar.gz
 
     [[ -d Nginx-Fancyindex-Theme-"${nginx_theme_version}" ]] && rm -rf Nginx-Fancyindex-Theme-"${nginx_theme_version}"
-    tar -xvJf Nginx-Fancyindex-Theme-"${nginx_theme_version}".tar.xz
+    tar -zxvf Nginx-Fancyindex-Theme-"${nginx_theme_version}".tar.gz
 
     [[ -d lua-nginx-module-"${nginx_lua_version}" ]] && rm -rf lua-nginx-module-"${nginx_lua_version}"
     tar -zxvf lua-nginx-module-"${nginx_lua_version}".tar.gz
