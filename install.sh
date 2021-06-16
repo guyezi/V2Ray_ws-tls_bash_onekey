@@ -31,7 +31,7 @@ Error="${Red}[错误]${Font}"
 # 版本
 shell_version="1.1.6.2"
 shell_mode="None"
-github_branch="master"
+github_branch="web"
 version_cmp="/tmp/version_cmp.tmp"
 v2ray_conf_dir="/usr/local/etc/v2ray"
 nginx_conf_dir="/etc/nginx"
@@ -54,6 +54,7 @@ nginx_version="1.21.0"
 openssl_version="1.1.1g"
 jemalloc_version="5.2.1"
 old_config_status="off"
+v2ray_version="4.23.1"
 # v2ray_plugin_version="$(wget -qO- "https://github.com/shadowsocks/v2ray-plugin/tags" | grep -E "/shadowsocks/v2ray-plugin/releases/tag/" | head -1 | sed -r 's/.*tag\/v(.+)\">.*/\1/')"
 
 #移动旧版本配置信息 对小于 1.1.0 版本适配
@@ -198,7 +199,7 @@ dependency_install() {
     judge "编译工具包 安装"
 
     if [[ "${ID}" == "centos" ]]; then
-        ${INS} -y install pcre pcre-devel zlib-devel epel-release
+        ${INS} -y install pcre pcre-devel zlib-devel epel-release ffmpeg-4.2.4-1.el8.x86_64 avformat avcodec avutil 
     else
         ${INS} -y install libpcre3 libpcre3-dev zlib1g-dev dbus
     fi
@@ -240,7 +241,7 @@ basic_optimization() {
 port_alterid_set() {
     if [[ "on" != "$old_config_status" ]]; then
         read -rp "请输入连接端口（default:443）:" port
-        [[ -z ${port} ]] && port="443"
+        [[ -z ${port} ]] && port="8443"
         read -rp "请输入alterID（default:2 仅允许填数字）:" alterID
         [[ -z ${alterID} ]] && alterID="2"
     fi
@@ -298,14 +299,14 @@ modify_nginx_other() {
     sed -i "/location/c \\\tlocation ${camouflage}" ${nginx_conf}
     sed -i "/proxy_pass/c \\\tproxy_pass http://127.0.0.1:${PORT};" ${nginx_conf}
     sed -i "/return/c \\\treturn 301 https://${domain}\$request_uri;" ${nginx_conf}
-    #sed -i "27i \\\tproxy_intercept_errors on;"  ${nginx_dir}/conf/nginx.conf
+    #sed -i "27i \\\tproxy_intercept_errors on;"  ${nginx_conf_dir}/nginx.conf
 }
 web_camouflage() {
     ##请注意 这里和LNMP脚本的默认路径冲突，千万不要在安装了LNMP的环境下使用本脚本，否则后果自负
     rm -rf /usr/nginx/html
     mkdir -p /usr/nginx/html
     cd /usr/nginx/html || exit
-    git clone https://github.com/wulabing/3DCEList.git
+    git clone https://github.com/guyezi/3DCEList.git
     judge "web 站点伪装"
 }
 v2ray_install() {
@@ -359,6 +360,12 @@ nginx_install() {
     judge "ngx-fancyindex 下载"
     git clone https://github.com/Naereen/Nginx-Fancyindex-Theme.git ${nginx_openssl_src}/Nginx-Fancyindex-Theme
     judge "Nginx-Fancyindex-Theme 下载"
+    git clone https://github.com/giom/nginx_accept_language_module ${nginx_openssl_src}/nginx_accept_language_module
+    judge "nginx_accept_language_module 下载"
+    git clone git://github.com/flavioribeiro/nginx-audio-track-for-hls-module.git ${nginx_openssl_src}/nginx-audio-track-for-hls-module
+    judge "nginx-audio-track-for-hls-module 下载"
+    git clone git://github.com/chaoslawful/lua-nginx-module.git ${nginx_openssl_src}/lua-nginx-module
+    judge "lua-nginx-module 下载"
 
     cd ${nginx_openssl_src} || exit
 
@@ -391,21 +398,29 @@ nginx_install() {
 
     ./configure --prefix="${nginx_dir}" \
         --conf-path="${nginx_conf_dir}"/nginx.conf \
-        --with-http_ssl_module \
+        --with-http_ssl_module --with-mail_ssl_module \
         --with-http_sub_module \
         --with-http_gzip_static_module \
         --with-http_stub_status_module \
-        --with-pcre \
+        --with-pcre --with-compat --with-file-aio --with-threads \
         --with-http_realip_module \
         --with-http_flv_module \
         --with-http_mp4_module \
         --with-http_secure_link_module \
-        --with-http_v2_module \
+        --with-http_v2_module --with-mail \
+        --with-http_addition_module --with-http_auth_request_module \
+        --with-http_dav_module --with-http_gunzip_module \
+        --with-http_random_index_module --with-http_realip_module  \
+        --with-http_slice_module \
         --with-cc-opt='-O3' \
         --with-ld-opt="-ljemalloc" \
         --with-openssl=../openssl-"$openssl_version" \
         --add-module=../ngx-fancyindex \
-        --add-module=../nginx-rtmp-module
+        --add-module=../nginx-rtmp-module \
+        --add-module=../nginx_accept_language_module \
+        --add-module=../nginx-audio-track-for-hls-module \
+        --add-module=../lua-nginx-module
+
 
     judge "编译检查"
     make -j "${THREAD}" && make install
@@ -499,7 +514,7 @@ acme() {
         echo -e "${OK} ${GreenBG} SSL 证书生成成功 ${Font}"
         sleep 2
         mkdir /cert
-        if "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath /cert/${domain}.crt --keypath /cert/${domain}.key --ecc --force; then
+        if "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath /cert/v2ray.crt --keypath /cert/v2ray.key --ecc --force; then
             echo -e "${OK} ${GreenBG} 证书配置成功 ${Font}"
             sleep 2
         fi
@@ -744,7 +759,7 @@ show_information() {
     cat "${v2ray_info_file}"
 }
 ssl_judge_and_install() {
-    if [[ -f "/cert/${domain}.key" || -f "/cert/${domain}.crt" ]]; then
+    if [[ -f "/cert/v2ray.key" || -f "/cert/v2ray.crt" ]]; then
         echo "/cert 目录下证书文件已存在"
         echo -e "${OK} ${GreenBG} 是否删除 [Y/N]? ${Font}"
         read -r ssl_delete
@@ -758,11 +773,11 @@ ssl_judge_and_install() {
         esac
     fi
 
-    if [[ -f "/cert/${domain}.key" || -f "/cert/${domain}.crt" ]]; then
+    if [[ -f "/cert/v2ray.key" || -f "/cert/v2ray.crt" ]]; then
         echo "证书文件已存在"
-    elif [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
+    elif [[ -f "$HOME/.acme.sh/${domain}_ecc/v2ray.key" && -f "$HOME/.acme.sh/${domain}_ecc/v2ray.cer" ]]; then
         echo "证书文件已存在"
-        "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath /cert/${domain}.crt --keypath /cert/${domain}.key --ecc
+        "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath /cert/v2ray.crt --keypath /cert/v2ray.key --ecc
         judge "证书应用"
     else
         ssl_install
@@ -827,7 +842,7 @@ show_error_log() {
 ssl_update_manuel() {
     [ -f ${amce_sh_file} ] && "/root/.acme.sh"/acme.sh --cron --home "/root/.acme.sh" || echo -e "${RedBG}证书签发工具不存在，请确认你是否使用了自己的证书${Font}"
     domain="$(info_extraction '\"add\"')"
-    "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath /cert/${domain}.crt --keypath /cert/${domain}.key --ecc
+    "$HOME"/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath /cert/v2ray.crt --keypath /cert/v2ray.key --ecc
 }
 bbr_boost_sh() {
     [ -f "tcp.sh" ] && rm -rf ./tcp.sh
