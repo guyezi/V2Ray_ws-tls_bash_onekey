@@ -414,7 +414,7 @@ nginx_install() {
     cd ../nginx-${nginx_version} || exit
 
     ./configure --prefix="${nginx_dir}" \
-        --conf-path="${nginx_conf_dir}"/nginx.conf \
+        --conf-path=/etc/nginx/nginx.conf \
         --with-http_ssl_module --with-mail_ssl_module \
         --with-http_sub_module \
         --with-http_gzip_static_module \
