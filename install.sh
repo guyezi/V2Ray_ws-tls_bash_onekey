@@ -446,6 +446,7 @@ nginx_install() {
     sed -i 's/    worker_connections  1024;/    worker_connections  4096;/' ${nginx_conf_dir}/nginx.conf
     sed -i '$i include conf.d/*.conf;' ${nginx_conf_dir}/nginx.conf
     cp -r ${nginx_openssl_src}/Nginx-Fancyindex-Theme/fancyindex.conf ${nginx_conf_dir}/conf.d/
+    sed -i 's/fancyindex/#fancyindex/g' ${nginx_conf_dir}/conf.d/fancyindex.conf
     cp -r ${nginx_openssl_src}/Nginx-Fancyindex-Theme/Nginx-Fancyindex-Theme-dark /usr/nginx/html/
     cp -r ${nginx_openssl_src}/Nginx-Fancyindex-Theme/Nginx-Fancyindex-Theme-light /usr/nginx/html/
 
